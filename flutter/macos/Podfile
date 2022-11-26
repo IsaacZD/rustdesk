@@ -1,4 +1,4 @@
-platform :osx, '10.12'
+platform :osx, '10.13' # IZMOD : Set target to 10.13
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
@@ -36,5 +36,10 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_macos_build_settings(target)
+    # IZMOD - BEGIN (11.25.2022) : Fix macos target version
+    target.build_configurations.each do |config|
+      config.build_settings['MACOSX_DEPLOYMENT_TARGET'] = '10.13'
+    end
+    # IZMOD - END (11.25.2022)
   end
 end
