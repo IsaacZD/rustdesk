@@ -98,6 +98,30 @@ fn gen_flutter_rust_bridge() {
     };
     // run fbr_codegen
     lib_flutter_rust_bridge_codegen::frb_codegen(opts).unwrap();
+
+    // @IZMOD - BEGIN (11.25.2022) : workaround fbr bug
+    use std::io::{BufReader, prelude::*};
+    use std::fs::File;
+
+    let contents = {
+        let generated_file = File::open("flutter/lib/generated_bridge.dart").unwrap();
+        BufReader::new(generated_file).lines().map(|line| {
+            line.unwrap().replace(
+                "ffi.NativeFunction<ffi.Bool Function(DartPort, ffi.Pointer<ffi.Void>)>>",
+                "ffi.NativeFunction<ffi.Uint8 Function(DartPort, ffi.Pointer<ffi.Void>)>>"
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+    };
+
+    let mut generated_file = std::fs::OpenOptions::new()
+        .write(true)
+        .truncate(true)
+        .open("flutter/lib/generated_bridge.dart").unwrap();
+    generated_file.write_all(contents.as_bytes()).unwrap();
+    generated_file.flush().unwrap();
+    // @IZMOD - END (11.25.2022)
 }
 
 fn main() {
